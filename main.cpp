@@ -628,13 +628,19 @@ int main()
     
     std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
     sennheiserHDxxx.replaceWire('4');
+    std::cout << "\n";
     neumannRandomMike.setState(false);
+    std::cout << "\n";
     square.implicitAppend();
+    std::cout << "\n";
     trisineOsc.implicitAppendWaveformNameFromParentStruct();
+    std::cout << "\n";
     negativeComb.changeProperties();
+    std::cout << "\n";
     customSet.getStateAndAllowTrackInput();
+    std::cout << "\n";
     chain1.setFilterGainAndGetState();
-    
-    
+    std::cout << "\n";
+        
     std::cout << "good to go!" << std::endl;
 }

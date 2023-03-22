@@ -115,6 +115,8 @@ struct Headphones
     void changeMicrophoneInputGain(Microphone connectedMicrophone, float targetGain);
     void decreaseInputSensitivityOnClipping(Microphone connectedMicrophone);
     std::string getConnectedMicrophoneID(Microphone connectedMicrophone, bool withHeadphonesIDAppended = false);
+    void replaceWire(char newWireLength);
+    char getWireLength();
     void displayInitState();
 
     Microphone mike;
@@ -148,7 +150,9 @@ Headphones::Microphone::~Microphone()
 // ================================================================================
 void Headphones::Microphone::setState(bool state)
 {
-    std::cout << "Microphone state changed to " << state << std::endl;
+    this->currentState = state;
+    std::cout << "Microphone state changed to " << this->currentState << std::endl;
+    std::cout << "Checking state switch on function calling: " << this->getState(false) << std::endl;
 }
 
 bool Headphones::Microphone::getState(bool toggleStateOnRequest)
@@ -195,6 +199,15 @@ void Headphones::imitateSurround(bool isSurround)
     std::cout << "Warning. Surround imitation might have a malfunction with " << impedance << " Ohm\n";
 }
 
+    char Headphones::getWireLength() { return this->wireLength; }
+
+void Headphones::replaceWire(char newWireLength)
+{
+    this->wireLength = newWireLength;
+    std::cout << "New wire has " << this->wireLength << " meters length\n";
+    std::cout << "Calling checking function...\nNew wire length is " << this->getWireLength() << std::endl;
+}
+
 void Headphones::displayInitState()
 {
     std::cout << "Impedance = " << impedance << std::endl
@@ -232,6 +245,8 @@ struct OscillatorSection
         void invertPhase(int initialPhase);
         void useFadeIn(float fadeInDuration = 0.01f);
         void fillEntireWaveTable(char transformationTypeIndex = 0);
+        std::string appendWaveformName();
+        void implicitAppend();
         void displayInitState();
     };
     std::string oscName = "Basic oscillator";
@@ -245,6 +260,7 @@ struct OscillatorSection
     bool getKeyTrackState(Waveform requestedWaveform); // returns key tracking state
     void trackPhase(Waveform targetWaveform);
     void setName(std::string newOscName);
+    void implicitAppendWaveformNameFromParentStruct();
     void displayInitState();
 
     Waveform sine;
@@ -304,6 +320,24 @@ void OscillatorSection::Waveform::fillEntireWaveTable(char transformationTypeInd
     std::cout << "Wavetable filled with transformation algorithm No: " << transformationTypeIndex << std::endl;
 }
 
+std::string OscillatorSection::Waveform::appendWaveformName()
+{
+    std::cout << "Appending called\n";
+    return this->waveformName + " wave";
+}
+
+void OscillatorSection::Waveform::implicitAppend()
+{
+    std::cout << "Calling waveform name appending implicitly...\n" << this->appendWaveformName() << std::endl;
+}
+
+void OscillatorSection::implicitAppendWaveformNameFromParentStruct()
+{
+    std::cout << "Calling appending from parent struct...\n";
+    std::cout << "Current name: " << this->sine.waveformName << std::endl;
+    std::cout << "Appending name implicitly...\n" << this->sine.appendWaveformName() << std::endl;
+}
+
 std::string OscillatorSection::getWaveformName(Waveform requestedWaveform)
 {
     return requestedWaveform.waveformName;
@@ -360,9 +394,10 @@ struct FilterSection
     char combPatternIndex { '0' };
 
     std::string getFilteringAlgorithm(bool considerMixAmount = false); // returns algorithm of filtering
-    void setParametricQuality(float coefficientOfQualityAndGainInteraction);
+    std::string setParametricQuality(float coefficientOfQualityAndGainInteraction);
     void flipHorizontally(float pivotFrequencyOffset);
-    void displayInitState();
+    void changeProperties();
+    std::string displayInitState();
 };
 // ================================================================================
 FilterSection::FilterSection() : gain(0.0f), mix(1.0f)
@@ -386,10 +421,11 @@ std::string FilterSection::getFilteringAlgorithm(bool considerMixAmount)
     return algorithmLine + considerationLine;
 }
 
-void FilterSection::setParametricQuality(float coefficientOfQualityAndGainInteraction)
+std::string FilterSection::setParametricQuality(float coefficientOfQualityAndGainInteraction)
 {
     std::cout << "Quality is now bound to Gain with " << coefficientOfQualityAndGainInteraction << std::endl;
     std::cout << "Quality factor is " << qualityFactor << " combined with " << gain << " gain\n";
+    return "Done\n";
 }
 
 void FilterSection::flipHorizontally(float pivotFrequencyOffset)
@@ -397,7 +433,15 @@ void FilterSection::flipHorizontally(float pivotFrequencyOffset)
     std::cout << "Filter pattern flipped with " << pivotFrequencyOffset << " horizontal offset\n";
 }
 
-void FilterSection::displayInitState()
+void FilterSection::changeProperties()
+{
+    std::cout << "Changing basic properties...\n";
+    this->qualityFactor = 0.5f;
+    std::cout << "New quality factor is set to " << this->qualityFactor << std::endl;
+    std::cout << "Activating parametric quality...\n" << this->setParametricQuality(0.37f) << std::endl;
+}
+
+std::string FilterSection::displayInitState()
 {
     std::cout << "Filter name: " << filterName << std::endl
               << "Cut frequency = " << cutFrequency << std::endl
@@ -405,6 +449,8 @@ void FilterSection::displayInitState()
               << "Gain = " << gain << std::endl
               << "Mix = " << mix << std::endl
               << "Comb pattern index = " << combPatternIndex << std::endl;
+    
+    return "Success!";
 }
 /*
  new UDT 4:
@@ -417,6 +463,7 @@ struct Headset
 
     bool checkConnection(Headphones headphones, Headphones::Microphone mike);
     void replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike);
+    void getStateAndAllowTrackInput();
 
     Headphones BeyerdynamicsDT1990;
     Headphones::Microphone ShureSM7B;
@@ -450,6 +497,12 @@ void Headset::replaceMikeWithExternal(Headphones headphones, Headphones::Microph
     headphones.mike = mike;
     std::cout << "Headphones internal microphone replaced by external one" << std::endl;
 }
+
+void Headset::getStateAndAllowTrackInput()
+{
+    std::cout << "Current mike state is " << this->ShureSM7B.currentState << std::endl;
+    std::cout << "Activating track input...\n" << this->ShureSM7B.trackInputLevel(false, true) << std::endl;
+}
 /*
  new UDT 5:
  with 2 member functions
@@ -461,6 +514,7 @@ struct GeneratorChain
 
     float calculateTotalLevel(OscillatorSection osc, FilterSection filter);
     void fadeInFilterMix(FilterSection filter);
+    void setFilterGainAndGetState();
 
     OscillatorSection osc1 { "SawOsc" };
     FilterSection FormantAOUI;
@@ -503,6 +557,13 @@ void GeneratorChain::fadeInFilterMix(FilterSection filter)
         }
     }
     else std::cout << "Error. Mix amount is 0.0f" << std::endl;
+}
+
+void GeneratorChain::setFilterGainAndGetState()
+{
+    this->FormantAOUI.gain = 0.25f;
+    std::cout << "Setting filter gain...\n" << this->FormantAOUI.gain << std::endl;
+    std::cout << "Getting updated state...\n" << this->FormantAOUI.displayInitState() << std::endl;
 }
 /*
  MAKE SURE YOU ARE NOT ON THE MASTER BRANCH
@@ -564,6 +625,16 @@ int main()
     chain1.calculateTotalLevel(trisineOsc, negativeComb);
     chain1.fadeInFilterMix(negativeComb);
     std::cout << "\n";
+    
+    std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
+    sennheiserHDxxx.replaceWire('4');
+    neumannRandomMike.setState(false);
+    square.implicitAppend();
+    trisineOsc.implicitAppendWaveformNameFromParentStruct();
+    negativeComb.changeProperties();
+    customSet.getStateAndAllowTrackInput();
+    chain1.setFilterGainAndGetState();
+    
     
     std::cout << "good to go!" << std::endl;
 }

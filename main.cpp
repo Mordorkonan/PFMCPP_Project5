@@ -634,11 +634,19 @@ int main()
     std::cout << "\n";
     
     std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
-    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.replaceWire('4') << std::endl;
+    
+    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.replaceWire('4')
+              << "Getting new wire length directly: " << sennheiserHDxxx.wireLength << std::endl;
+    
     std::cout << "Calling Microphone function via cout...\n"
               << neumannRandomMike.setState(false) << neumannRandomMike.currentState << std::endl;
-    std::cout << "Calling implicit appending...\n" << square.implicitAppend() << std::endl;
-    std::cout << "Calling parent appending...\n" << trisineOsc.implicitAppendWaveformNameFromParentStruct() << std::endl;
+    
+    std::cout << "Calling implicit appending...\n" << square.implicitAppend()
+              << "New waveform name is " << square.waveformName << std::endl;
+    
+    std::cout << "Calling parent appending...\n" << trisineOsc.implicitAppendWaveformNameFromParentStruct()
+              << "New waveform name is " << trisineOsc.sine.waveformName << std::endl;
+    
     std::cout << "Changing properties via cout...\n" << negativeComb.changeProperties() << " - Completed!\n" << std::endl;
     std::cout << "Setting input tracking...\n" << customSet.getStateAndAllowTrackInput() << std::endl;
     std::cout << "1 if function as been completed successfully...\n" << chain1.setFilterGainAndGetState() << std::endl;

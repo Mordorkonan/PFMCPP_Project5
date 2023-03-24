@@ -99,6 +99,7 @@ struct Headphones
         std::string setState(bool state);
         bool getState(bool toggleStateOnRequest = false);
         float trackInputLevel(bool useGainToDecibelsTransformation = false, bool strobeLedOnClipping = false);
+        void setInputTrackingAndGetGain();
         void displayInitState();
     };
 
@@ -109,7 +110,7 @@ struct Headphones
     std::string manufacturer = " ";
 
     void startPlayingSound(float gainCompensation = 1.0f);
-    float changeEarcupPosition(char position); // returns a dimension from top to the earcup
+    char changeEarcupPosition(char position); // returns a dimension from top to the earcup
     void imitateSurround(bool isSurround = false);
 
     void changeMicrophoneInputGain(Microphone connectedMicrophone, float targetGain);
@@ -118,6 +119,7 @@ struct Headphones
     std::string replaceWire(char newWireLength);
     char getWireLength();
     void displayInitState();
+    void changeEarcupPositionAndGetSpectrumDistribution();
 
     Microphone mike;
 };
@@ -178,13 +180,19 @@ float Headphones::Microphone::trackInputLevel(bool useGainToDecibelsTransformati
     return inputLevel;
 }
 
+void Headphones::Microphone::setInputTrackingAndGetGain()
+{
+    std::cout << "This trackInputLevel():" << this->trackInputLevel(false, true)
+              << "\nThis inputGain: " << this->inputGain << std::endl;
+}
+
 void Headphones::startPlayingSound(float gainCompensation)
 {
     float inputLevel = -4.3f * gainCompensation;
     std::cout << "Playback started with level: " << inputLevel << std::endl;
 }
 
-float Headphones::changeEarcupPosition(char position)
+char Headphones::changeEarcupPosition(char position)
 {
     std::cout << "New earcup position has been set";
     return position;
@@ -208,6 +216,12 @@ std::string Headphones::replaceWire(char newWireLength)
     std::cout << "New wire has " << this->wireLength << " meters length\n";
     std::cout << "Calling checking function...\nNew wire length is " << this->getWireLength() << std::endl;
     return "Done!\n";
+}
+
+void Headphones::changeEarcupPositionAndGetSpectrumDistribution()
+{
+    std::cout << "This changeEarcupPosition():" << this->changeEarcupPosition('3')
+              << "\nThis spectrumDistribution: " << this->spectrumDistribution << std::endl;
 }
 
 void Headphones::displayInitState()
@@ -247,6 +261,7 @@ struct OscillatorSection
         void invertPhase(int initialPhase);
         void useFadeIn(float fadeInDuration = 0.01f);
         void fillEntireWaveTable(char transformationTypeIndex = 0);
+        void implicitAppendAndNameDisplay();
         std::string appendWaveformName();
         std::string implicitAppend();
         void displayInitState();
@@ -261,7 +276,8 @@ struct OscillatorSection
     std::string getWaveformName(Waveform requestedWaveform); // returns waveform's name
     bool getKeyTrackState(Waveform requestedWaveform); // returns key tracking state
     void trackPhase(Waveform targetWaveform);
-    void setName(std::string newOscName);
+    void setNameAndDisplay(std::string newOscName);
+    std::string setName(std::string newOscName);
     std::string implicitAppendWaveformNameFromParentStruct();
     void displayInitState();
 
@@ -334,6 +350,12 @@ std::string OscillatorSection::Waveform::implicitAppend()
     return "Appended\n";
 }
 
+void OscillatorSection::Waveform::implicitAppendAndNameDisplay()
+{
+    std::cout << "This appendWaveformName():" << this->appendWaveformName()
+              << "\nThis waveformName: " << this->waveformName << std::endl;
+}
+
 std::string OscillatorSection::implicitAppendWaveformNameFromParentStruct()
 {
     std::cout << "Calling appending from parent struct...\n";
@@ -360,11 +382,18 @@ void OscillatorSection::trackPhase(Waveform targetWaveform)
     std::cout << "Phase is being tracked now\nCurrent phase is " << currentPhase << std::endl;
 }
 
-void OscillatorSection::setName(std::string newOscName)
+std::string OscillatorSection::setName(std::string newOscName)
 {
     std::string tempOscName = oscName;
     oscName = newOscName;
     std::cout << "Previous oscillator name " << tempOscName << " has been changed to " << oscName << std::endl;
+    return newOscName;
+}
+
+void OscillatorSection::setNameAndDisplay(std::string newOscName)
+{
+    std::cout << "This setName(): " << this->setName(newOscName)
+              << "\nThis oscName: " << this->oscName << std::endl;
 }
 
 void OscillatorSection::displayInitState()
@@ -650,6 +679,28 @@ int main()
     std::cout << "Changing properties via cout...\n" << negativeComb.changeProperties() << " - Completed!\n" << std::endl;
     std::cout << "Setting input tracking...\n" << customSet.getStateAndAllowTrackInput() << std::endl;
     std::cout << "1 if function as been completed successfully...\n" << chain1.setFilterGainAndGetState() << std::endl;
-        
+
+    std::cout << "\n\n==================== ### ====================\n\n";
+
+    std::cout << "neumannRandomMike's trackInputLevel(): " << neumannRandomMike.trackInputLevel(false, true)
+              << "\nneumannRandomMike's inputGain: " << neumannRandomMike.inputGain << std::endl;
+    neumannRandomMike.setInputTrackingAndGetGain();
+    std::cout << "\n";
+
+    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.changeEarcupPosition('3')
+              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.spectrumDistribution << std::endl;
+    sennheiserHDxxx.changeEarcupPositionAndGetSpectrumDistribution();
+    std::cout << "\n";
+
+    std::cout << "saw's appendWaveformName(): " << saw.appendWaveformName()
+              << "\nsaw's waveformName: " << saw.waveformName << std::endl;
+    saw.implicitAppendAndNameDisplay();
+    std::cout << "\n";
+
+    std::cout << "sineOsc's setName(): " << sineOsc.setName("Sine osc 1")
+              << "\nsineOsc's oscName: " << sineOsc.oscName << std::endl;
+    sineOsc.setNameAndDisplay("Sine osc 2");
+    std::cout << "\n";    
+    
     std::cout << "good to go!" << std::endl;
 }

@@ -96,9 +96,10 @@ struct Headphones
         bool EnablementState = true;
         bool currentState;
 
-        void setState(bool state);
+        std::string setState(bool state);
         bool getState(bool toggleStateOnRequest = false);
         float trackInputLevel(bool useGainToDecibelsTransformation = false, bool strobeLedOnClipping = false);
+        void setInputTrackingAndGetGain();
         void displayInitState();
     };
 
@@ -109,13 +110,16 @@ struct Headphones
     std::string manufacturer = " ";
 
     void startPlayingSound(float gainCompensation = 1.0f);
-    float changeEarcupPosition(char position); // returns a dimension from top to the earcup
+    char changeEarcupPosition(char position); // returns a dimension from top to the earcup
     void imitateSurround(bool isSurround = false);
 
     void changeMicrophoneInputGain(Microphone connectedMicrophone, float targetGain);
     void decreaseInputSensitivityOnClipping(Microphone connectedMicrophone);
     std::string getConnectedMicrophoneID(Microphone connectedMicrophone, bool withHeadphonesIDAppended = false);
+    std::string replaceWire(char newWireLength);
+    char getWireLength();
     void displayInitState();
+    void changeEarcupPositionAndGetSpectrumDistribution();
 
     Microphone mike;
 };
@@ -146,9 +150,12 @@ Headphones::Microphone::~Microphone()
     std::cout << "Headphones::Microphone destructor launched" << std::endl;    
 }
 // ================================================================================
-void Headphones::Microphone::setState(bool state)
+std::string Headphones::Microphone::setState(bool state)
 {
-    std::cout << "Microphone state changed to " << state << std::endl;
+    this->currentState = state;
+    std::cout << "Microphone state changed to " << this->currentState << std::endl;
+    std::cout << "Checking state switch on function calling: " << this->getState(false) << std::endl;
+    return "The state has been successfully changed to ";
 }
 
 bool Headphones::Microphone::getState(bool toggleStateOnRequest)
@@ -173,13 +180,19 @@ float Headphones::Microphone::trackInputLevel(bool useGainToDecibelsTransformati
     return inputLevel;
 }
 
+void Headphones::Microphone::setInputTrackingAndGetGain()
+{
+    std::cout << "This trackInputLevel():" << this->trackInputLevel(false, true)
+              << "\nThis inputGain: " << this->inputGain << std::endl;
+}
+
 void Headphones::startPlayingSound(float gainCompensation)
 {
     float inputLevel = -4.3f * gainCompensation;
     std::cout << "Playback started with level: " << inputLevel << std::endl;
 }
 
-float Headphones::changeEarcupPosition(char position)
+char Headphones::changeEarcupPosition(char position)
 {
     std::cout << "New earcup position has been set";
     return position;
@@ -193,6 +206,22 @@ void Headphones::imitateSurround(bool isSurround)
         std::cout << "Surround imitation disabled\n";
 
     std::cout << "Warning. Surround imitation might have a malfunction with " << impedance << " Ohm\n";
+}
+
+    char Headphones::getWireLength() { return this->wireLength; }
+
+std::string Headphones::replaceWire(char newWireLength)
+{
+    this->wireLength = newWireLength;
+    std::cout << "New wire has " << this->wireLength << " meters length\n";
+    std::cout << "Calling checking function...\nNew wire length is " << this->getWireLength() << std::endl;
+    return "Done!\n";
+}
+
+void Headphones::changeEarcupPositionAndGetSpectrumDistribution()
+{
+    std::cout << "This changeEarcupPosition():" << this->changeEarcupPosition('3')
+              << "\nThis spectrumDistribution: " << this->spectrumDistribution << std::endl;
 }
 
 void Headphones::displayInitState()
@@ -232,6 +261,9 @@ struct OscillatorSection
         void invertPhase(int initialPhase);
         void useFadeIn(float fadeInDuration = 0.01f);
         void fillEntireWaveTable(char transformationTypeIndex = 0);
+        void implicitAppendAndNameDisplay();
+        std::string appendWaveformName();
+        std::string implicitAppend();
         void displayInitState();
     };
     std::string oscName = "Basic oscillator";
@@ -244,7 +276,9 @@ struct OscillatorSection
     std::string getWaveformName(Waveform requestedWaveform); // returns waveform's name
     bool getKeyTrackState(Waveform requestedWaveform); // returns key tracking state
     void trackPhase(Waveform targetWaveform);
-    void setName(std::string newOscName);
+    void setNameAndDisplay(std::string newOscName);
+    std::string setName(std::string newOscName);
+    std::string implicitAppendWaveformNameFromParentStruct();
     void displayInitState();
 
     Waveform sine;
@@ -304,6 +338,32 @@ void OscillatorSection::Waveform::fillEntireWaveTable(char transformationTypeInd
     std::cout << "Wavetable filled with transformation algorithm No: " << transformationTypeIndex << std::endl;
 }
 
+std::string OscillatorSection::Waveform::appendWaveformName()
+{
+    std::cout << "Appending called\n";
+    return this->waveformName + " wave";
+}
+
+std::string OscillatorSection::Waveform::implicitAppend()
+{
+    std::cout << "Calling waveform name appending implicitly...\n" << this->appendWaveformName() << std::endl;
+    return "Appended\n";
+}
+
+void OscillatorSection::Waveform::implicitAppendAndNameDisplay()
+{
+    std::cout << "This appendWaveformName():" << this->appendWaveformName()
+              << "\nThis waveformName: " << this->waveformName << std::endl;
+}
+
+std::string OscillatorSection::implicitAppendWaveformNameFromParentStruct()
+{
+    std::cout << "Calling appending from parent struct...\n";
+    std::cout << "Current name: " << this->sine.waveformName << std::endl;
+    std::cout << "Appending name implicitly...\n" << this->sine.appendWaveformName() << std::endl;
+    return "Done!\n";
+}
+
 std::string OscillatorSection::getWaveformName(Waveform requestedWaveform)
 {
     return requestedWaveform.waveformName;
@@ -322,11 +382,18 @@ void OscillatorSection::trackPhase(Waveform targetWaveform)
     std::cout << "Phase is being tracked now\nCurrent phase is " << currentPhase << std::endl;
 }
 
-void OscillatorSection::setName(std::string newOscName)
+std::string OscillatorSection::setName(std::string newOscName)
 {
     std::string tempOscName = oscName;
     oscName = newOscName;
     std::cout << "Previous oscillator name " << tempOscName << " has been changed to " << oscName << std::endl;
+    return newOscName;
+}
+
+void OscillatorSection::setNameAndDisplay(std::string newOscName)
+{
+    std::cout << "This setName(): " << this->setName(newOscName)
+              << "\nThis oscName: " << this->oscName << std::endl;
 }
 
 void OscillatorSection::displayInitState()
@@ -360,9 +427,10 @@ struct FilterSection
     char combPatternIndex { '0' };
 
     std::string getFilteringAlgorithm(bool considerMixAmount = false); // returns algorithm of filtering
-    void setParametricQuality(float coefficientOfQualityAndGainInteraction);
+    std::string setParametricQuality(float coefficientOfQualityAndGainInteraction);
     void flipHorizontally(float pivotFrequencyOffset);
-    void displayInitState();
+    int changeProperties();
+    std::string displayInitState();
 };
 // ================================================================================
 FilterSection::FilterSection() : gain(0.0f), mix(1.0f)
@@ -386,10 +454,11 @@ std::string FilterSection::getFilteringAlgorithm(bool considerMixAmount)
     return algorithmLine + considerationLine;
 }
 
-void FilterSection::setParametricQuality(float coefficientOfQualityAndGainInteraction)
+std::string FilterSection::setParametricQuality(float coefficientOfQualityAndGainInteraction)
 {
     std::cout << "Quality is now bound to Gain with " << coefficientOfQualityAndGainInteraction << std::endl;
     std::cout << "Quality factor is " << qualityFactor << " combined with " << gain << " gain\n";
+    return "Done\n";
 }
 
 void FilterSection::flipHorizontally(float pivotFrequencyOffset)
@@ -397,7 +466,16 @@ void FilterSection::flipHorizontally(float pivotFrequencyOffset)
     std::cout << "Filter pattern flipped with " << pivotFrequencyOffset << " horizontal offset\n";
 }
 
-void FilterSection::displayInitState()
+int FilterSection::changeProperties()
+{
+    std::cout << "Changing basic properties...\n";
+    this->qualityFactor = 0.5f;
+    std::cout << "New quality factor is set to " << this->qualityFactor << std::endl;
+    std::cout << "Activating parametric quality...\n" << this->setParametricQuality(0.37f) << std::endl;
+    return 100;
+}
+
+std::string FilterSection::displayInitState()
 {
     std::cout << "Filter name: " << filterName << std::endl
               << "Cut frequency = " << cutFrequency << std::endl
@@ -405,6 +483,8 @@ void FilterSection::displayInitState()
               << "Gain = " << gain << std::endl
               << "Mix = " << mix << std::endl
               << "Comb pattern index = " << combPatternIndex << std::endl;
+    
+    return "Success!";
 }
 /*
  new UDT 4:
@@ -417,6 +497,7 @@ struct Headset
 
     bool checkConnection(Headphones headphones, Headphones::Microphone mike);
     void replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike);
+    std::string getStateAndAllowTrackInput();
 
     Headphones BeyerdynamicsDT1990;
     Headphones::Microphone ShureSM7B;
@@ -450,6 +531,13 @@ void Headset::replaceMikeWithExternal(Headphones headphones, Headphones::Microph
     headphones.mike = mike;
     std::cout << "Headphones internal microphone replaced by external one" << std::endl;
 }
+
+std::string Headset::getStateAndAllowTrackInput()
+{
+    std::cout << "Current mike state is " << this->ShureSM7B.currentState << std::endl;
+    std::cout << "Activating track input...\n" << this->ShureSM7B.trackInputLevel(false, true) << std::endl;
+    return "Success!\n";
+}
 /*
  new UDT 5:
  with 2 member functions
@@ -461,6 +549,7 @@ struct GeneratorChain
 
     float calculateTotalLevel(OscillatorSection osc, FilterSection filter);
     void fadeInFilterMix(FilterSection filter);
+    bool setFilterGainAndGetState();
 
     OscillatorSection osc1 { "SawOsc" };
     FilterSection FormantAOUI;
@@ -503,6 +592,14 @@ void GeneratorChain::fadeInFilterMix(FilterSection filter)
         }
     }
     else std::cout << "Error. Mix amount is 0.0f" << std::endl;
+}
+
+bool GeneratorChain::setFilterGainAndGetState()
+{
+    this->FormantAOUI.gain = 0.25f;
+    std::cout << "Setting filter gain...\n" << this->FormantAOUI.gain << std::endl;
+    std::cout << "Getting updated state...\n" << this->FormantAOUI.displayInitState() << std::endl;
+    return true;
 }
 /*
  MAKE SURE YOU ARE NOT ON THE MASTER BRANCH
@@ -564,6 +661,46 @@ int main()
     chain1.calculateTotalLevel(trisineOsc, negativeComb);
     chain1.fadeInFilterMix(negativeComb);
     std::cout << "\n";
+    
+    std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
+    
+    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.replaceWire('4')
+              << "Getting new wire length directly: " << sennheiserHDxxx.wireLength << std::endl;
+    
+    std::cout << "Calling Microphone function via cout...\n"
+              << neumannRandomMike.setState(false) << neumannRandomMike.currentState << std::endl;
+    
+    std::cout << "Calling implicit appending...\n" << square.implicitAppend()
+              << "New waveform name is " << square.waveformName << std::endl;
+    
+    std::cout << "Calling parent appending...\n" << trisineOsc.implicitAppendWaveformNameFromParentStruct()
+              << "New waveform name is " << trisineOsc.sine.waveformName << std::endl;
+    
+    std::cout << "Changing properties via cout...\n" << negativeComb.changeProperties() << " - Completed!\n" << std::endl;
+    std::cout << "Setting input tracking...\n" << customSet.getStateAndAllowTrackInput() << std::endl;
+    std::cout << "1 if function as been completed successfully...\n" << chain1.setFilterGainAndGetState() << std::endl;
+
+    std::cout << "\n\n==================== ### ====================\n\n";
+
+    std::cout << "neumannRandomMike's trackInputLevel(): " << neumannRandomMike.trackInputLevel(false, true)
+              << "\nneumannRandomMike's inputGain: " << neumannRandomMike.inputGain << std::endl;
+    neumannRandomMike.setInputTrackingAndGetGain();
+    std::cout << "\n";
+
+    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.changeEarcupPosition('3')
+              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.spectrumDistribution << std::endl;
+    sennheiserHDxxx.changeEarcupPositionAndGetSpectrumDistribution();
+    std::cout << "\n";
+
+    std::cout << "saw's appendWaveformName(): " << saw.appendWaveformName()
+              << "\nsaw's waveformName: " << saw.waveformName << std::endl;
+    saw.implicitAppendAndNameDisplay();
+    std::cout << "\n";
+
+    std::cout << "sineOsc's setName(): " << sineOsc.setName("Sine osc 1")
+              << "\nsineOsc's oscName: " << sineOsc.oscName << std::endl;
+    sineOsc.setNameAndDisplay("Sine osc 2");
+    std::cout << "\n";    
     
     std::cout << "good to go!" << std::endl;
 }

@@ -106,7 +106,7 @@ struct Headphones
         void setInputTrackingAndGetGain();
         void displayInitState();
 
-        JUCE_LEAK_DETECTOR(Microphone);
+        JUCE_LEAK_DETECTOR(Microphone)
     };
 
     int impedance = 250;
@@ -128,7 +128,8 @@ struct Headphones
     void changeEarcupPositionAndGetSpectrumDistribution();
 
     Microphone mike;
-    JUCE_LEAK_DETECTOR(Headphones);
+
+    JUCE_LEAK_DETECTOR(Headphones)
 };
 // ================================================================================
 Headphones::Headphones() : wireLength('3'), isClosed(false)
@@ -273,7 +274,7 @@ struct OscillatorSection
         std::string implicitAppend();
         void displayInitState();
 
-        JUCE_LEAK_DETECTOR(Waveform);
+        JUCE_LEAK_DETECTOR(Waveform)
     };
     std::string oscName = "Basic oscillator";
     char waveformIndex;
@@ -291,7 +292,8 @@ struct OscillatorSection
     void displayInitState();
 
     Waveform sine;
-    JUCE_LEAK_DETECTOR(OscillatorSection);
+
+    JUCE_LEAK_DETECTOR(OscillatorSection)
 };
 // ================================================================================
 OscillatorSection::OscillatorSection() : waveformIndex('0'), amountOfVoices(1)
@@ -441,7 +443,8 @@ struct FilterSection
     void flipHorizontally(float pivotFrequencyOffset);
     int changeProperties();
     std::string displayInitState();
-    JUCE_LEAK_DETECTOR(FilterSection);
+
+    JUCE_LEAK_DETECTOR(FilterSection)
 };
 // ================================================================================
 FilterSection::FilterSection() : gain(0.0f), mix(1.0f)
@@ -506,13 +509,14 @@ struct Headset
     Headset();
     ~Headset();
 
-    bool checkConnection(Headphones headphones, Headphones::Microphone mike);
-    void replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike);
+    bool checkConnection(const Headphones& headphones, Headphones::Microphone mike);
+    void replaceMikeWithExternal(Headphones& headphones, Headphones::Microphone mike);
     std::string getStateAndAllowTrackInput();
 
     Headphones BeyerdynamicsDT1990;
     Headphones::Microphone ShureSM7B;
-    JUCE_LEAK_DETECTOR(Headset);
+
+    JUCE_LEAK_DETECTOR(Headset)
 };
 // ================================================================================
 Headset::Headset()
@@ -527,7 +531,7 @@ Headset::~Headset()
     ShureSM7B.setState(false);
 }
 // ================================================================================
-bool Headset::checkConnection(Headphones headphones, Headphones::Microphone mike)
+bool Headset::checkConnection(const Headphones& headphones, Headphones::Microphone mike)
 {
     if (headphones.manufacturer != " " && mike.inputGain != 0.0f)
     {
@@ -538,7 +542,7 @@ bool Headset::checkConnection(Headphones headphones, Headphones::Microphone mike
     return false;
 }
 
-void Headset::replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike)
+void Headset::replaceMikeWithExternal(Headphones& headphones, Headphones::Microphone mike)
 {
     headphones.mike = mike;
     std::cout << "Headphones internal microphone replaced by external one" << std::endl;
@@ -559,13 +563,14 @@ struct GeneratorChain
     GeneratorChain();
     ~GeneratorChain();
 
-    float calculateTotalLevel(OscillatorSection osc, FilterSection filter);
-    void fadeInFilterMix(FilterSection filter);
+    float calculateTotalLevel(OscillatorSection& osc, FilterSection& filter);
+    void fadeInFilterMix(FilterSection& filter);
     bool setFilterGainAndGetState();
 
     OscillatorSection osc1 { "SawOsc" };
     FilterSection FormantAOUI;
-    JUCE_LEAK_DETECTOR(GeneratorChain);
+
+    JUCE_LEAK_DETECTOR(GeneratorChain)
 };
 // ================================================================================
 GeneratorChain::GeneratorChain()
@@ -581,13 +586,13 @@ GeneratorChain::~GeneratorChain()
 }
 // ================================================================================
 
-float GeneratorChain::calculateTotalLevel(OscillatorSection osc, FilterSection filter)
+float GeneratorChain::calculateTotalLevel(OscillatorSection& osc, FilterSection& filter)
 {
     std::cout << "Calculating total level..." << std::endl;
     return osc.level * filter.gain;
 }
 
-void GeneratorChain::fadeInFilterMix(FilterSection filter)
+void GeneratorChain::fadeInFilterMix(FilterSection& filter)
 {
     if (filter.mix != 0.0f)
     {
@@ -625,28 +630,12 @@ struct HeadphonesWrapper
     Headphones* headphonesPtr = nullptr;
 };
 
-struct MicrophoneWrapper
-{
-    MicrophoneWrapper(Headphones::Microphone* ptr) : microphonePtr (ptr) { }
-    ~MicrophoneWrapper() { delete microphonePtr; }
-
-    Headphones::Microphone* microphonePtr = nullptr;
-};
-
 struct OscillatorSectionWrapper
 {
     OscillatorSectionWrapper(OscillatorSection* ptr) : oscillatorSectionPtr (ptr) { }
     ~OscillatorSectionWrapper() { delete oscillatorSectionPtr; }
 
     OscillatorSection* oscillatorSectionPtr = nullptr;
-};
-
-struct WaveformWrapper
-{
-    WaveformWrapper(OscillatorSection::Waveform* ptr) : waveformPtr (ptr) { }
-    ~WaveformWrapper() { delete waveformPtr; }
-
-    OscillatorSection::Waveform* waveformPtr = nullptr;
 };
 
 struct FilterSectionWrapper
@@ -690,18 +679,18 @@ int main()
 {
     std::cout << "\n";
 
-    Headphones sennheiserHDxxx;
+    HeadphonesWrapper sennheiserHDxxx(new Headphones());
     Headphones::Microphone neumannRandomMike;
-    OscillatorSection sineOsc("Sine Osc"), trisineOsc("trisine Osc");
+    OscillatorSectionWrapper sineOsc(new OscillatorSection("Sine Osc")), trisineOsc( new OscillatorSection("trisine Osc"));
     OscillatorSection::Waveform saw, square;
-    FilterSection negativeComb;
-    GeneratorChain chain1;
-    Headset customSet;
+    FilterSectionWrapper negativeComb(new FilterSection());
+    GeneratorChainWrapper chain1(new GeneratorChain());
+    HeadsetWrapper customSet(new Headset());
     std::cout << "\n";
 
-    sennheiserHDxxx.changeEarcupPosition(2);
-    sennheiserHDxxx.imitateSurround(true);
-    sennheiserHDxxx.startPlayingSound(0.69f);
+    sennheiserHDxxx.headphonesPtr->changeEarcupPosition(2);
+    sennheiserHDxxx.headphonesPtr->imitateSurround(true);
+    sennheiserHDxxx.headphonesPtr->startPlayingSound(0.69f);
     std::cout << "\n";
 
     neumannRandomMike.getState(true);
@@ -709,10 +698,10 @@ int main()
     neumannRandomMike.trackInputLevel(false, true);
     std::cout << "\n";
 
-    sineOsc.getKeyTrackState(saw);
-    sineOsc.getWaveformName(saw);
-    sineOsc.setName("Hypersaw");
-    sineOsc.trackPhase(saw);
+    sineOsc.oscillatorSectionPtr->getKeyTrackState(saw);
+    sineOsc.oscillatorSectionPtr->getWaveformName(saw);
+    sineOsc.oscillatorSectionPtr->setName("Hypersaw");
+    sineOsc.oscillatorSectionPtr->trackPhase(saw);
     std::cout << "\n";
 
     saw.fillEntireWaveTable(1);
@@ -720,23 +709,23 @@ int main()
     saw.invertPhase(-60);
     std::cout << "\n";
 
-    negativeComb.flipHorizontally(-0.2f);
-    negativeComb.getFilteringAlgorithm(/*false*/);
-    negativeComb.setParametricQuality(0.88f);
+    negativeComb.filterSectionPtr->flipHorizontally(-0.2f);
+    negativeComb.filterSectionPtr->getFilteringAlgorithm(/*false*/);
+    negativeComb.filterSectionPtr->setParametricQuality(0.88f);
     std::cout << "\n";
 
-    customSet.checkConnection(sennheiserHDxxx, neumannRandomMike);
-    customSet.replaceMikeWithExternal(sennheiserHDxxx, neumannRandomMike);
+    customSet.headsetPtr->checkConnection(*sennheiserHDxxx.headphonesPtr, neumannRandomMike);
+    customSet.headsetPtr->replaceMikeWithExternal(*sennheiserHDxxx.headphonesPtr, neumannRandomMike);
     std::cout << "\n";
 
-    chain1.calculateTotalLevel(trisineOsc, negativeComb);
-    chain1.fadeInFilterMix(negativeComb);
+    chain1.genChainPtr->calculateTotalLevel(*trisineOsc.oscillatorSectionPtr, *negativeComb.filterSectionPtr);
+    chain1.genChainPtr->fadeInFilterMix(*negativeComb.filterSectionPtr);
     std::cout << "\n";
     
     std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
     
-    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.replaceWire('4')
-              << "Getting new wire length directly: " << sennheiserHDxxx.wireLength << std::endl;
+    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.headphonesPtr->replaceWire('4')
+              << "Getting new wire length directly: " << sennheiserHDxxx.headphonesPtr->wireLength << std::endl;
     
     std::cout << "Calling Microphone function via cout...\n"
               << neumannRandomMike.setState(false) << neumannRandomMike.currentState << std::endl;
@@ -744,12 +733,13 @@ int main()
     std::cout << "Calling implicit appending...\n" << square.implicitAppend()
               << "New waveform name is " << square.waveformName << std::endl;
     
-    std::cout << "Calling parent appending...\n" << trisineOsc.implicitAppendWaveformNameFromParentStruct()
-              << "New waveform name is " << trisineOsc.sine.waveformName << std::endl;
+    std::cout << "Calling parent appending...\n"
+              << trisineOsc.oscillatorSectionPtr->implicitAppendWaveformNameFromParentStruct()
+              << "New waveform name is " << trisineOsc.oscillatorSectionPtr->sine.waveformName << std::endl;
     
-    std::cout << "Changing properties via cout...\n" << negativeComb.changeProperties() << " - Completed!\n" << std::endl;
-    std::cout << "Setting input tracking...\n" << customSet.getStateAndAllowTrackInput() << std::endl;
-    std::cout << "1 if function as been completed successfully...\n" << chain1.setFilterGainAndGetState() << std::endl;
+    std::cout << "Changing properties via cout...\n" << negativeComb.filterSectionPtr->changeProperties() << " - Completed!\n" << std::endl;
+    std::cout << "Setting input tracking...\n" << customSet.headsetPtr->getStateAndAllowTrackInput() << std::endl;
+    std::cout << "1 if function as been completed successfully...\n" << chain1.genChainPtr->setFilterGainAndGetState() << std::endl;
 
     std::cout << "\n\n==================== ### ====================\n\n";
 
@@ -758,9 +748,10 @@ int main()
     neumannRandomMike.setInputTrackingAndGetGain();
     std::cout << "\n";
 
-    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.changeEarcupPosition('3')
-              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.spectrumDistribution << std::endl;
-    sennheiserHDxxx.changeEarcupPositionAndGetSpectrumDistribution();
+    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.headphonesPtr->changeEarcupPosition('3')
+              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.headphonesPtr->spectrumDistribution
+              << std::endl;
+    sennheiserHDxxx.headphonesPtr->changeEarcupPositionAndGetSpectrumDistribution();
     std::cout << "\n";
 
     std::cout << "saw's appendWaveformName(): " << saw.appendWaveformName()
@@ -768,9 +759,9 @@ int main()
     saw.implicitAppendAndNameDisplay();
     std::cout << "\n";
 
-    std::cout << "sineOsc's setName(): " << sineOsc.setName("Sine osc 1")
-              << "\nsineOsc's oscName: " << sineOsc.oscName << std::endl;
-    sineOsc.setNameAndDisplay("Sine osc 2");
+    std::cout << "sineOsc's setName(): " << sineOsc.oscillatorSectionPtr->setName("Sine osc 1")
+              << "\nsineOsc's oscName: " << sineOsc.oscillatorSectionPtr->oscName << std::endl;
+    sineOsc.oscillatorSectionPtr->setNameAndDisplay("Sine osc 2");
     std::cout << "\n";    
     
     std::cout << "good to go!" << std::endl;

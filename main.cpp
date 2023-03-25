@@ -83,6 +83,7 @@ void Axe::aConstMemberFunction() const { }
  copied UDT 1:
  */
 #include <iostream>
+#include "LeakedObjectDetector.h"
 
 struct Headphones
 {
@@ -104,6 +105,8 @@ struct Headphones
         float trackInputLevel(bool useGainToDecibelsTransformation = false, bool strobeLedOnClipping = false);
         void setInputTrackingAndGetGain();
         void displayInitState();
+
+        JUCE_LEAK_DETECTOR(Microphone);
     };
 
     int impedance = 250;
@@ -125,6 +128,7 @@ struct Headphones
     void changeEarcupPositionAndGetSpectrumDistribution();
 
     Microphone mike;
+    JUCE_LEAK_DETECTOR(Headphones);
 };
 // ================================================================================
 Headphones::Headphones() : wireLength('3'), isClosed(false)
@@ -268,6 +272,8 @@ struct OscillatorSection
         std::string appendWaveformName();
         std::string implicitAppend();
         void displayInitState();
+
+        JUCE_LEAK_DETECTOR(Waveform);
     };
     std::string oscName = "Basic oscillator";
     char waveformIndex;
@@ -285,6 +291,7 @@ struct OscillatorSection
     void displayInitState();
 
     Waveform sine;
+    JUCE_LEAK_DETECTOR(OscillatorSection);
 };
 // ================================================================================
 OscillatorSection::OscillatorSection() : waveformIndex('0'), amountOfVoices(1)
@@ -434,6 +441,7 @@ struct FilterSection
     void flipHorizontally(float pivotFrequencyOffset);
     int changeProperties();
     std::string displayInitState();
+    JUCE_LEAK_DETECTOR(FilterSection);
 };
 // ================================================================================
 FilterSection::FilterSection() : gain(0.0f), mix(1.0f)
@@ -504,6 +512,7 @@ struct Headset
 
     Headphones BeyerdynamicsDT1990;
     Headphones::Microphone ShureSM7B;
+    JUCE_LEAK_DETECTOR(Headset);
 };
 // ================================================================================
 Headset::Headset()
@@ -556,6 +565,7 @@ struct GeneratorChain
 
     OscillatorSection osc1 { "SawOsc" };
     FilterSection FormantAOUI;
+    JUCE_LEAK_DETECTOR(GeneratorChain);
 };
 // ================================================================================
 GeneratorChain::GeneratorChain()
@@ -604,6 +614,64 @@ bool GeneratorChain::setFilterGainAndGetState()
     std::cout << "Getting updated state...\n" << this->FormantAOUI.displayInitState() << std::endl;
     return true;
 }
+
+//==================== WRAPPER CLASSES ====================
+
+struct HeadphonesWrapper
+{
+    HeadphonesWrapper(Headphones* ptr) : headphonesPtr (ptr) { }
+    ~HeadphonesWrapper() { delete headphonesPtr; }
+
+    Headphones* headphonesPtr = nullptr;
+};
+
+struct MicrophoneWrapper
+{
+    MicrophoneWrapper(Headphones::Microphone* ptr) : microphonePtr (ptr) { }
+    ~MicrophoneWrapper() { delete microphonePtr; }
+
+    Headphones::Microphone* microphonePtr = nullptr;
+};
+
+struct OscillatorSectionWrapper
+{
+    OscillatorSectionWrapper(OscillatorSection* ptr) : oscillatorSectionPtr (ptr) { }
+    ~OscillatorSectionWrapper() { delete oscillatorSectionPtr; }
+
+    OscillatorSection* oscillatorSectionPtr = nullptr;
+};
+
+struct WaveformWrapper
+{
+    WaveformWrapper(OscillatorSection::Waveform* ptr) : waveformPtr (ptr) { }
+    ~WaveformWrapper() { delete waveformPtr; }
+
+    OscillatorSection::Waveform* waveformPtr = nullptr;
+};
+
+struct FilterSectionWrapper
+{
+    FilterSectionWrapper(FilterSection* ptr) : filterSectionPtr (ptr) { }
+    ~FilterSectionWrapper() { delete filterSectionPtr; }
+
+    FilterSection* filterSectionPtr = nullptr;
+};
+
+struct HeadsetWrapper
+{
+    HeadsetWrapper(Headset* ptr) : headsetPtr (ptr) { }
+    ~HeadsetWrapper() { delete headsetPtr; }
+
+    Headset* headsetPtr = nullptr;
+};
+
+struct GeneratorChainWrapper
+{
+    GeneratorChainWrapper(GeneratorChain* ptr) : genChainPtr (ptr) { }
+    ~GeneratorChainWrapper() { delete genChainPtr; }
+
+    GeneratorChain* genChainPtr = nullptr;
+};
 /*
  MAKE SURE YOU ARE NOT ON THE MASTER BRANCH
 

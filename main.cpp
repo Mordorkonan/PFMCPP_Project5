@@ -83,6 +83,7 @@ void Axe::aConstMemberFunction() const { }
  copied UDT 1:
  */
 #include <iostream>
+#include "LeakedObjectDetector.h"
 
 struct Headphones
 {
@@ -99,11 +100,14 @@ struct Headphones
         bool EnablementState = true;
         bool currentState;
 
-        std::string setState(bool state);
-        bool getState(bool toggleStateOnRequest = false);
-        float trackInputLevel(bool useGainToDecibelsTransformation = false, bool strobeLedOnClipping = false);
+        std::string setState(const bool& state);
+        bool getState(const bool& toggleStateOnRequest = false);
+        float trackInputLevel(const bool& useGainToDecibelsTransformation = false,
+                              const bool& strobeLedOnClipping = false) const;
         void setInputTrackingAndGetGain();
-        void displayInitState();
+        void displayInitState() const;
+
+        JUCE_LEAK_DETECTOR(Microphone)
     };
 
     int impedance = 250;
@@ -112,19 +116,21 @@ struct Headphones
     bool isClosed;
     std::string manufacturer = " ";
 
-    void startPlayingSound(float gainCompensation = 1.0f);
-    char changeEarcupPosition(char position); // returns a dimension from top to the earcup
-    void imitateSurround(bool isSurround = false);
+    void startPlayingSound(const float& gainCompensation = 1.0f) const;
+    char changeEarcupPosition(const char& position) const; // returns a dimension from top to the earcup
+    void imitateSurround(const bool& isSurround = false) const;
 
     void changeMicrophoneInputGain(Microphone connectedMicrophone, float targetGain);
     void decreaseInputSensitivityOnClipping(Microphone connectedMicrophone);
-    std::string getConnectedMicrophoneID(Microphone connectedMicrophone, bool withHeadphonesIDAppended = false);
-    std::string replaceWire(char newWireLength);
-    char getWireLength();
-    void displayInitState();
-    void changeEarcupPositionAndGetSpectrumDistribution();
+    std::string getConnectedMicrophoneID(Microphone connectedMicrophone, bool withHeadphonesIDAppended = false) const;
+    std::string replaceWire(const char& newWireLength);
+    char getWireLength() const;
+    void displayInitState() const;
+    void changeEarcupPositionAndGetSpectrumDistribution() const;
 
     Microphone mike;
+
+    JUCE_LEAK_DETECTOR(Headphones)
 };
 // ================================================================================
 Headphones::Headphones() : wireLength('3'), isClosed(false)
@@ -153,7 +159,7 @@ Headphones::Microphone::~Microphone()
     std::cout << "Headphones::Microphone destructor launched" << std::endl;    
 }
 // ================================================================================
-std::string Headphones::Microphone::setState(bool state)
+std::string Headphones::Microphone::setState(const bool& state)
 {
     this->currentState = state;
     std::cout << "Microphone state changed to " << this->currentState << std::endl;
@@ -161,7 +167,7 @@ std::string Headphones::Microphone::setState(bool state)
     return "The state has been successfully changed to ";
 }
 
-bool Headphones::Microphone::getState(bool toggleStateOnRequest)
+bool Headphones::Microphone::getState(const bool& toggleStateOnRequest)
 {
     if (toggleStateOnRequest)
     {
@@ -173,7 +179,7 @@ bool Headphones::Microphone::getState(bool toggleStateOnRequest)
     return currentState;
 }
 
-float Headphones::Microphone::trackInputLevel(bool useGainToDecibelsTransformation, bool strobeLedOnClipping)
+float Headphones::Microphone::trackInputLevel(const bool& useGainToDecibelsTransformation, const bool& strobeLedOnClipping) const
 {
     float inputLevel = -4.3f; // arbitralily taken value supposed to be recieved from input gain controller state
     if (useGainToDecibelsTransformation)
@@ -189,19 +195,19 @@ void Headphones::Microphone::setInputTrackingAndGetGain()
               << "\nThis inputGain: " << this->inputGain << std::endl;
 }
 
-void Headphones::startPlayingSound(float gainCompensation)
+void Headphones::startPlayingSound(const float& gainCompensation) const
 {
     float inputLevel = -4.3f * gainCompensation;
     std::cout << "Playback started with level: " << inputLevel << std::endl;
 }
 
-char Headphones::changeEarcupPosition(char position)
+char Headphones::changeEarcupPosition(const char& position) const
 {
     std::cout << "New earcup position has been set";
     return position;
 }
 
-void Headphones::imitateSurround(bool isSurround)
+void Headphones::imitateSurround(const bool& isSurround) const
 {
     if (isSurround)
         std::cout << "Surround imitation enabled\n";
@@ -211,9 +217,9 @@ void Headphones::imitateSurround(bool isSurround)
     std::cout << "Warning. Surround imitation might have a malfunction with " << impedance << " Ohm\n";
 }
 
-    char Headphones::getWireLength() { return this->wireLength; }
+char Headphones::getWireLength() const { return this->wireLength; }
 
-std::string Headphones::replaceWire(char newWireLength)
+std::string Headphones::replaceWire(const char& newWireLength)
 {
     this->wireLength = newWireLength;
     std::cout << "New wire has " << this->wireLength << " meters length\n";
@@ -221,13 +227,13 @@ std::string Headphones::replaceWire(char newWireLength)
     return "Done!\n";
 }
 
-void Headphones::changeEarcupPositionAndGetSpectrumDistribution()
+void Headphones::changeEarcupPositionAndGetSpectrumDistribution() const
 {
     std::cout << "This changeEarcupPosition():" << this->changeEarcupPosition('3')
               << "\nThis spectrumDistribution: " << this->spectrumDistribution << std::endl;
 }
 
-void Headphones::displayInitState()
+void Headphones::displayInitState() const
 {
     std::cout << "Impedance = " << impedance << std::endl
               << "Spectrum distribution = " << spectrumDistribution << std::endl
@@ -236,7 +242,7 @@ void Headphones::displayInitState()
               << "Manufacturer: " << manufacturer << std::endl;
 }
 
-void Headphones::Microphone::displayInitState()
+void Headphones::Microphone::displayInitState() const
 {
     std::cout << "Input gain = " << inputGain << std::endl
               << "Flexible construction = " << flexibleConstruction << std::endl
@@ -262,12 +268,14 @@ struct OscillatorSection
         int initialPhase { 180 };
 
         void invertPhase(int initialPhase);
-        void useFadeIn(float fadeInDuration = 0.01f);
-        void fillEntireWaveTable(char transformationTypeIndex = 0);
+        void useFadeIn(const float& fadeInDuration = 0.01f) const;
+        void fillEntireWaveTable(const char& transformationTypeIndex = 0) const;
         void implicitAppendAndNameDisplay();
         std::string appendWaveformName();
         std::string implicitAppend();
-        void displayInitState();
+        void displayInitState() const;
+
+        JUCE_LEAK_DETECTOR(Waveform)
     };
     std::string oscName = "Basic oscillator";
     char waveformIndex;
@@ -276,15 +284,17 @@ struct OscillatorSection
     float pan { 0.0f };
     short amountOfVoices;
 
-    std::string getWaveformName(Waveform requestedWaveform); // returns waveform's name
-    bool getKeyTrackState(Waveform requestedWaveform); // returns key tracking state
-    void trackPhase(Waveform targetWaveform);
-    void setNameAndDisplay(std::string newOscName);
-    std::string setName(std::string newOscName);
+    std::string getWaveformName(const Waveform& requestedWaveform) const; // returns waveform's name
+    bool getKeyTrackState(const Waveform& requestedWaveform) const; // returns key tracking state
+    void trackPhase(const Waveform& targetWaveform) const;
+    void setNameAndDisplay(const std::string& newOscName);
+    std::string setName(const std::string& newOscName);
     std::string implicitAppendWaveformNameFromParentStruct();
-    void displayInitState();
+    void displayInitState() const;
 
     Waveform sine;
+
+    JUCE_LEAK_DETECTOR(OscillatorSection)
 };
 // ================================================================================
 OscillatorSection::OscillatorSection() : waveformIndex('0'), amountOfVoices(1)
@@ -331,12 +341,12 @@ void OscillatorSection::Waveform::invertPhase(int phase)
     std::cout << "Previous phase " << tempPhase << " has been inverted to " << phase << std::endl;
 }
 
-void OscillatorSection::Waveform::useFadeIn(float fadeInDuration)
+void OscillatorSection::Waveform::useFadeIn(const float& fadeInDuration) const
 {
     std::cout << "Applied Fade In: " << fadeInDuration << std::endl;
 }
 
-void OscillatorSection::Waveform::fillEntireWaveTable(char transformationTypeIndex)
+void OscillatorSection::Waveform::fillEntireWaveTable(const char& transformationTypeIndex) const
 {
     std::cout << "Wavetable filled with transformation algorithm No: " << transformationTypeIndex << std::endl;
 }
@@ -367,17 +377,17 @@ std::string OscillatorSection::implicitAppendWaveformNameFromParentStruct()
     return "Done!\n";
 }
 
-std::string OscillatorSection::getWaveformName(Waveform requestedWaveform)
+std::string OscillatorSection::getWaveformName(const Waveform& requestedWaveform) const
 {
     return requestedWaveform.waveformName;
 }
 
-bool OscillatorSection::getKeyTrackState(Waveform requestedWaveform)
+bool OscillatorSection::getKeyTrackState(const Waveform& requestedWaveform) const
 {
     return requestedWaveform.keyTrack;
 }
 
-void OscillatorSection::trackPhase(Waveform targetWaveform)
+void OscillatorSection::trackPhase(const Waveform& targetWaveform) const
 {
     bool isPlaying = false; // checks if the midi-key is pushed
     int phase = 181; // supposed to be refreshed every sync time tick
@@ -385,7 +395,7 @@ void OscillatorSection::trackPhase(Waveform targetWaveform)
     std::cout << "Phase is being tracked now\nCurrent phase is " << currentPhase << std::endl;
 }
 
-std::string OscillatorSection::setName(std::string newOscName)
+std::string OscillatorSection::setName(const std::string& newOscName)
 {
     std::string tempOscName = oscName;
     oscName = newOscName;
@@ -393,13 +403,13 @@ std::string OscillatorSection::setName(std::string newOscName)
     return newOscName;
 }
 
-void OscillatorSection::setNameAndDisplay(std::string newOscName)
+void OscillatorSection::setNameAndDisplay(const std::string& newOscName)
 {
     std::cout << "This setName(): " << this->setName(newOscName)
               << "\nThis oscName: " << this->oscName << std::endl;
 }
 
-void OscillatorSection::displayInitState()
+void OscillatorSection::displayInitState() const
 {
     std::cout << "Oscillator name: " << oscName << std::endl
               << "Waveform index = " << waveformIndex << std::endl
@@ -408,7 +418,7 @@ void OscillatorSection::displayInitState()
               << "Amount of voices = " << amountOfVoices << std::endl;
 }
 
-void OscillatorSection::Waveform::displayInitState()
+void OscillatorSection::Waveform::displayInitState() const
 {
     std::cout << "Waveform Name: " << waveformName << std::endl
               << "Key track = " << keyTrack << std::endl
@@ -429,11 +439,13 @@ struct FilterSection
     float mix;
     char combPatternIndex { '0' };
 
-    std::string getFilteringAlgorithm(bool considerMixAmount = false); // returns algorithm of filtering
-    std::string setParametricQuality(float coefficientOfQualityAndGainInteraction);
-    void flipHorizontally(float pivotFrequencyOffset);
+    std::string getFilteringAlgorithm(const bool& considerMixAmount = false) const; // returns algorithm of filtering
+    std::string setParametricQuality(const float& coefficientOfQualityAndGainInteraction) const;
+    void flipHorizontally(const float& pivotFrequencyOffset) const;
     int changeProperties();
-    std::string displayInitState();
+    std::string displayInitState() const;
+
+    JUCE_LEAK_DETECTOR(FilterSection)
 };
 // ================================================================================
 FilterSection::FilterSection() : gain(0.0f), mix(1.0f)
@@ -449,7 +461,7 @@ FilterSection::~FilterSection()
     std::cout << "FilterSection destructor launched" << std::endl;
 }
 // ================================================================================
-std::string FilterSection::getFilteringAlgorithm(bool considerMixAmount)
+std::string FilterSection::getFilteringAlgorithm(const bool& considerMixAmount) const
 {
     std::string algorithmLine = "Filter Algorithm is normal";
     std::string considerationLine = (considerMixAmount ? " with mix amount considered\n" : "\n");
@@ -457,14 +469,14 @@ std::string FilterSection::getFilteringAlgorithm(bool considerMixAmount)
     return algorithmLine + considerationLine;
 }
 
-std::string FilterSection::setParametricQuality(float coefficientOfQualityAndGainInteraction)
+std::string FilterSection::setParametricQuality(const float& coefficientOfQualityAndGainInteraction) const
 {
     std::cout << "Quality is now bound to Gain with " << coefficientOfQualityAndGainInteraction << std::endl;
     std::cout << "Quality factor is " << qualityFactor << " combined with " << gain << " gain\n";
     return "Done\n";
 }
 
-void FilterSection::flipHorizontally(float pivotFrequencyOffset)
+void FilterSection::flipHorizontally(const float& pivotFrequencyOffset) const
 {
     std::cout << "Filter pattern flipped with " << pivotFrequencyOffset << " horizontal offset\n";
 }
@@ -478,7 +490,7 @@ int FilterSection::changeProperties()
     return 100;
 }
 
-std::string FilterSection::displayInitState()
+std::string FilterSection::displayInitState() const
 {
     std::cout << "Filter name: " << filterName << std::endl
               << "Cut frequency = " << cutFrequency << std::endl
@@ -498,12 +510,14 @@ struct Headset
     Headset();
     ~Headset();
 
-    bool checkConnection(Headphones headphones, Headphones::Microphone mike);
-    void replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike);
+    bool checkConnection(const Headphones& headphones, const Headphones::Microphone& mike) const;
+    void replaceMikeWithExternal(Headphones& headphones, const Headphones::Microphone& mike);
     std::string getStateAndAllowTrackInput();
 
     Headphones BeyerdynamicsDT1990;
     Headphones::Microphone ShureSM7B;
+
+    JUCE_LEAK_DETECTOR(Headset)
 };
 // ================================================================================
 Headset::Headset()
@@ -518,7 +532,7 @@ Headset::~Headset()
     ShureSM7B.setState(false);
 }
 // ================================================================================
-bool Headset::checkConnection(Headphones headphones, Headphones::Microphone mike)
+bool Headset::checkConnection(const Headphones& headphones, const Headphones::Microphone& mike) const
 {
     if (headphones.manufacturer != " " && mike.inputGain != 0.0f)
     {
@@ -529,7 +543,7 @@ bool Headset::checkConnection(Headphones headphones, Headphones::Microphone mike
     return false;
 }
 
-void Headset::replaceMikeWithExternal(Headphones headphones, Headphones::Microphone mike)
+void Headset::replaceMikeWithExternal(Headphones& headphones, const Headphones::Microphone& mike)
 {
     headphones.mike = mike;
     std::cout << "Headphones internal microphone replaced by external one" << std::endl;
@@ -550,12 +564,14 @@ struct GeneratorChain
     GeneratorChain();
     ~GeneratorChain();
 
-    float calculateTotalLevel(OscillatorSection osc, FilterSection filter);
-    void fadeInFilterMix(FilterSection filter);
+    float calculateTotalLevel(const OscillatorSection& osc, const FilterSection& filter) const;
+    void fadeInFilterMix(FilterSection& filter);
     bool setFilterGainAndGetState();
 
     OscillatorSection osc1 { "SawOsc" };
     FilterSection FormantAOUI;
+
+    JUCE_LEAK_DETECTOR(GeneratorChain)
 };
 // ================================================================================
 GeneratorChain::GeneratorChain()
@@ -571,13 +587,13 @@ GeneratorChain::~GeneratorChain()
 }
 // ================================================================================
 
-float GeneratorChain::calculateTotalLevel(OscillatorSection osc, FilterSection filter)
+float GeneratorChain::calculateTotalLevel(const OscillatorSection& osc, const FilterSection& filter) const
 {
     std::cout << "Calculating total level..." << std::endl;
     return osc.level * filter.gain;
 }
 
-void GeneratorChain::fadeInFilterMix(FilterSection filter)
+void GeneratorChain::fadeInFilterMix(FilterSection& filter)
 {
     if (filter.mix != 0.0f)
     {
@@ -604,6 +620,48 @@ bool GeneratorChain::setFilterGainAndGetState()
     std::cout << "Getting updated state...\n" << this->FormantAOUI.displayInitState() << std::endl;
     return true;
 }
+
+//==================== WRAPPER CLASSES ====================
+
+struct HeadphonesWrapper
+{
+    HeadphonesWrapper(Headphones* ptr) : headphonesPtr (ptr) { }
+    ~HeadphonesWrapper() { delete headphonesPtr; }
+
+    Headphones* headphonesPtr = nullptr;
+};
+
+struct OscillatorSectionWrapper
+{
+    OscillatorSectionWrapper(OscillatorSection* ptr) : oscillatorSectionPtr (ptr) { }
+    ~OscillatorSectionWrapper() { delete oscillatorSectionPtr; }
+
+    OscillatorSection* oscillatorSectionPtr = nullptr;
+};
+
+struct FilterSectionWrapper
+{
+    FilterSectionWrapper(FilterSection* ptr) : filterSectionPtr (ptr) { }
+    ~FilterSectionWrapper() { delete filterSectionPtr; }
+
+    FilterSection* filterSectionPtr = nullptr;
+};
+
+struct HeadsetWrapper
+{
+    HeadsetWrapper(Headset* ptr) : headsetPtr (ptr) { }
+    ~HeadsetWrapper() { delete headsetPtr; }
+
+    Headset* headsetPtr = nullptr;
+};
+
+struct GeneratorChainWrapper
+{
+    GeneratorChainWrapper(GeneratorChain* ptr) : genChainPtr (ptr) { }
+    ~GeneratorChainWrapper() { delete genChainPtr; }
+
+    GeneratorChain* genChainPtr = nullptr;
+};
 /*
  MAKE SURE YOU ARE NOT ON THE MASTER BRANCH
 
@@ -622,18 +680,18 @@ int main()
 {
     std::cout << "\n";
 
-    Headphones sennheiserHDxxx;
+    HeadphonesWrapper sennheiserHDxxx(new Headphones());
     Headphones::Microphone neumannRandomMike;
-    OscillatorSection sineOsc("Sine Osc"), trisineOsc("trisine Osc");
+    OscillatorSectionWrapper sineOsc(new OscillatorSection("Sine Osc")), trisineOsc( new OscillatorSection("trisine Osc"));
     OscillatorSection::Waveform saw, square;
-    FilterSection negativeComb;
-    GeneratorChain chain1;
-    Headset customSet;
+    FilterSectionWrapper negativeComb(new FilterSection());
+    GeneratorChainWrapper chain1(new GeneratorChain());
+    HeadsetWrapper customSet(new Headset());
     std::cout << "\n";
 
-    sennheiserHDxxx.changeEarcupPosition(2);
-    sennheiserHDxxx.imitateSurround(true);
-    sennheiserHDxxx.startPlayingSound(0.69f);
+    sennheiserHDxxx.headphonesPtr->changeEarcupPosition(2);
+    sennheiserHDxxx.headphonesPtr->imitateSurround(true);
+    sennheiserHDxxx.headphonesPtr->startPlayingSound(0.69f);
     std::cout << "\n";
 
     neumannRandomMike.getState(true);
@@ -641,10 +699,10 @@ int main()
     neumannRandomMike.trackInputLevel(false, true);
     std::cout << "\n";
 
-    sineOsc.getKeyTrackState(saw);
-    sineOsc.getWaveformName(saw);
-    sineOsc.setName("Hypersaw");
-    sineOsc.trackPhase(saw);
+    sineOsc.oscillatorSectionPtr->getKeyTrackState(saw);
+    sineOsc.oscillatorSectionPtr->getWaveformName(saw);
+    sineOsc.oscillatorSectionPtr->setName("Hypersaw");
+    sineOsc.oscillatorSectionPtr->trackPhase(saw);
     std::cout << "\n";
 
     saw.fillEntireWaveTable(1);
@@ -652,23 +710,23 @@ int main()
     saw.invertPhase(-60);
     std::cout << "\n";
 
-    negativeComb.flipHorizontally(-0.2f);
-    negativeComb.getFilteringAlgorithm(/*false*/);
-    negativeComb.setParametricQuality(0.88f);
+    negativeComb.filterSectionPtr->flipHorizontally(-0.2f);
+    negativeComb.filterSectionPtr->getFilteringAlgorithm(/*false*/);
+    negativeComb.filterSectionPtr->setParametricQuality(0.88f);
     std::cout << "\n";
 
-    customSet.checkConnection(sennheiserHDxxx, neumannRandomMike);
-    customSet.replaceMikeWithExternal(sennheiserHDxxx, neumannRandomMike);
+    customSet.headsetPtr->checkConnection(*sennheiserHDxxx.headphonesPtr, neumannRandomMike);
+    customSet.headsetPtr->replaceMikeWithExternal(*sennheiserHDxxx.headphonesPtr, neumannRandomMike);
     std::cout << "\n";
 
-    chain1.calculateTotalLevel(trisineOsc, negativeComb);
-    chain1.fadeInFilterMix(negativeComb);
+    chain1.genChainPtr->calculateTotalLevel(*trisineOsc.oscillatorSectionPtr, *negativeComb.filterSectionPtr);
+    chain1.genChainPtr->fadeInFilterMix(*negativeComb.filterSectionPtr);
     std::cout << "\n";
     
     std::cout << "\n==================== NEW FUNCTIONS ====================\n\n";
     
-    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.replaceWire('4')
-              << "Getting new wire length directly: " << sennheiserHDxxx.wireLength << std::endl;
+    std::cout << "Calling Headphones function via cout...\n" << sennheiserHDxxx.headphonesPtr->replaceWire('4')
+              << "Getting new wire length directly: " << sennheiserHDxxx.headphonesPtr->wireLength << std::endl;
     
     std::cout << "Calling Microphone function via cout...\n"
               << neumannRandomMike.setState(false) << neumannRandomMike.currentState << std::endl;
@@ -676,12 +734,13 @@ int main()
     std::cout << "Calling implicit appending...\n" << square.implicitAppend()
               << "New waveform name is " << square.waveformName << std::endl;
     
-    std::cout << "Calling parent appending...\n" << trisineOsc.implicitAppendWaveformNameFromParentStruct()
-              << "New waveform name is " << trisineOsc.sine.waveformName << std::endl;
+    std::cout << "Calling parent appending...\n"
+              << trisineOsc.oscillatorSectionPtr->implicitAppendWaveformNameFromParentStruct()
+              << "New waveform name is " << trisineOsc.oscillatorSectionPtr->sine.waveformName << std::endl;
     
-    std::cout << "Changing properties via cout...\n" << negativeComb.changeProperties() << " - Completed!\n" << std::endl;
-    std::cout << "Setting input tracking...\n" << customSet.getStateAndAllowTrackInput() << std::endl;
-    std::cout << "1 if function as been completed successfully...\n" << chain1.setFilterGainAndGetState() << std::endl;
+    std::cout << "Changing properties via cout...\n" << negativeComb.filterSectionPtr->changeProperties() << " - Completed!\n" << std::endl;
+    std::cout << "Setting input tracking...\n" << customSet.headsetPtr->getStateAndAllowTrackInput() << std::endl;
+    std::cout << "1 if function as been completed successfully...\n" << chain1.genChainPtr->setFilterGainAndGetState() << std::endl;
 
     std::cout << "\n\n==================== ### ====================\n\n";
 
@@ -690,9 +749,10 @@ int main()
     neumannRandomMike.setInputTrackingAndGetGain();
     std::cout << "\n";
 
-    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.changeEarcupPosition('3')
-              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.spectrumDistribution << std::endl;
-    sennheiserHDxxx.changeEarcupPositionAndGetSpectrumDistribution();
+    std::cout << "sennheiserHDxxx's changeEarcupPosition(): " << sennheiserHDxxx.headphonesPtr->changeEarcupPosition('3')
+              << "\nsennheiserHDxxx's spectrumDistribution: " << sennheiserHDxxx.headphonesPtr->spectrumDistribution
+              << std::endl;
+    sennheiserHDxxx.headphonesPtr->changeEarcupPositionAndGetSpectrumDistribution();
     std::cout << "\n";
 
     std::cout << "saw's appendWaveformName(): " << saw.appendWaveformName()
@@ -700,9 +760,9 @@ int main()
     saw.implicitAppendAndNameDisplay();
     std::cout << "\n";
 
-    std::cout << "sineOsc's setName(): " << sineOsc.setName("Sine osc 1")
-              << "\nsineOsc's oscName: " << sineOsc.oscName << std::endl;
-    sineOsc.setNameAndDisplay("Sine osc 2");
+    std::cout << "sineOsc's setName(): " << sineOsc.oscillatorSectionPtr->setName("Sine osc 1")
+              << "\nsineOsc's oscName: " << sineOsc.oscillatorSectionPtr->oscName << std::endl;
+    sineOsc.oscillatorSectionPtr->setNameAndDisplay("Sine osc 2");
     std::cout << "\n";    
     
     std::cout << "good to go!" << std::endl;

@@ -77,13 +77,14 @@ void Axe::aConstMemberFunction() const { }
 
 #pragma once
 
-#include <iostream>
-#include "Headset.h"
+#include "LeakedObjectDetector.h"
 #include "Wrappers.h"
+#include "Headset.h"
 #include "Headphones.h"
 #include "FilterSection.h"
 #include "GeneratorChain.h"
 #include "OscillatorSection.h"
+#include <iostream>
 
 int main()
 {

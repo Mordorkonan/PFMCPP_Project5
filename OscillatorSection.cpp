@@ -1,4 +1,3 @@
-#include <iostream>
 #include "OscillatorSection.h"
 
 // ================================================================================
@@ -24,55 +23,7 @@ OscillatorSection::~OscillatorSection()
     std::cout << "OscillatorSection destructor launched" << std::endl;
 }
 
-OscillatorSection::Waveform::Waveform() : keyTrack(false)
-{
-    std::cout << "OscillatorSection::Waveform constructor launched" << std::endl;
-    std::cout << "\n";
-    displayInitState();
-    std::cout << "\n";
-}
-
-OscillatorSection::Waveform::~Waveform()
-{
-    std::cout << "OscillatorSection::Waveform destructor launched" << std::endl;
-}
 // ================================================================================
-void OscillatorSection::Waveform::invertPhase(int phase)
-{
-    int tempPhase = phase;
-    if (phase < 0) phase += 180;
-    else phase -= 180;
-    std::cout << "Phase inverted";
-    std::cout << "Previous phase " << tempPhase << " has been inverted to " << phase << std::endl;
-}
-
-void OscillatorSection::Waveform::useFadeIn(const float& fadeInDuration) const
-{
-    std::cout << "Applied Fade In: " << fadeInDuration << std::endl;
-}
-
-void OscillatorSection::Waveform::fillEntireWaveTable(const char& transformationTypeIndex) const
-{
-    std::cout << "Wavetable filled with transformation algorithm No: " << transformationTypeIndex << std::endl;
-}
-
-std::string OscillatorSection::Waveform::appendWaveformName()
-{
-    std::cout << "Appending called\n";
-    return this->waveformName + " wave";
-}
-
-std::string OscillatorSection::Waveform::implicitAppend()
-{
-    std::cout << "Calling waveform name appending implicitly...\n" << this->appendWaveformName() << std::endl;
-    return "Appended\n";
-}
-
-void OscillatorSection::Waveform::implicitAppendAndNameDisplay()
-{
-    std::cout << "This appendWaveformName():" << this->appendWaveformName()
-              << "\nThis waveformName: " << this->waveformName << std::endl;
-}
 
 std::string OscillatorSection::implicitAppendWaveformNameFromParentStruct()
 {
@@ -121,11 +72,4 @@ void OscillatorSection::displayInitState() const
               << "Unison spread = " << unisonSpread << std::endl
               << "Level = " << level << std::endl
               << "Amount of voices = " << amountOfVoices << std::endl;
-}
-
-void OscillatorSection::Waveform::displayInitState() const
-{
-    std::cout << "Waveform Name: " << waveformName << std::endl
-              << "Key track = " << keyTrack << std::endl
-              << "initial phase = " << initialPhase << std::endl;
 }

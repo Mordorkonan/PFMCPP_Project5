@@ -75,25 +75,22 @@ void Axe::aConstMemberFunction() const { }
  Wait for my code review.
  */
 
-#pragma once
+// #pragma once
 
-#include "LeakedObjectDetector.h"
+// #include "LeakedObjectDetector.h"
 #include "Wrappers.h"
-#include "Headset.h"
-#include "Headphones.h"
-#include "FilterSection.h"
-#include "GeneratorChain.h"
-#include "OscillatorSection.h"
-#include <iostream>
+// #include "Headset.h"
+// #include "GeneratorChain.h"
+// #include <iostream>
 
 int main()
 {
     std::cout << "\n";
 
     HeadphonesWrapper sennheiserHDxxx(new Headphones());
-    Headphones::Microphone neumannRandomMike;
+    Microphone neumannRandomMike;
     OscillatorSectionWrapper sineOsc(new OscillatorSection("Sine Osc")), trisineOsc( new OscillatorSection("trisine Osc"));
-    OscillatorSection::Waveform saw, square;
+    Waveform saw, square;
     FilterSectionWrapper negativeComb(new FilterSection());
     GeneratorChainWrapper chain1(new GeneratorChain());
     HeadsetWrapper customSet(new Headset());

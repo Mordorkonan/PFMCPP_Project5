@@ -1,4 +1,4 @@
-#include <iostream>
+//#include <iostream>
 #include "Headset.h"
 
 // ================================================================================
@@ -14,7 +14,7 @@ Headset::~Headset()
     ShureSM7B.setState(false);
 }
 // ================================================================================
-bool Headset::checkConnection(const Headphones& headphones, const Headphones::Microphone& mike) const
+bool Headset::checkConnection(const Headphones& headphones, const Microphone& mike) const
 {
     if (headphones.manufacturer != " " && mike.inputGain != 0.0f)
     {
@@ -25,7 +25,7 @@ bool Headset::checkConnection(const Headphones& headphones, const Headphones::Mi
     return false;
 }
 
-void Headset::replaceMikeWithExternal(Headphones& headphones, const Headphones::Microphone& mike)
+void Headset::replaceMikeWithExternal(Headphones& headphones, const Microphone& mike)
 {
     headphones.mike = mike;
     std::cout << "Headphones internal microphone replaced by external one" << std::endl;

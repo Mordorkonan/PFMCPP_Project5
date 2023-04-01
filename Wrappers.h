@@ -1,8 +1,13 @@
-struct Headphones;
-struct OscillatorSection;
-struct FilterSection;
-struct Headset;
-struct GeneratorChain;
+// struct Headphones;
+// struct OscillatorSection;
+// struct FilterSection;
+// struct Headset;
+// struct GeneratorChain;
+#pragma once
+
+#include "LeakedObjectDetector.h"
+#include "Headset.h"
+#include "GeneratorChain.h"
 //==================== WRAPPER CLASSES ====================
 
 struct HeadphonesWrapper

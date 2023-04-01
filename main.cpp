@@ -75,13 +75,8 @@ void Axe::aConstMemberFunction() const { }
  Wait for my code review.
  */
 
-// #pragma once
-
-// #include "LeakedObjectDetector.h"
+#include "LeakedObjectDetector.h"
 #include "Wrappers.h"
-// #include "Headset.h"
-// #include "GeneratorChain.h"
-// #include <iostream>
 
 int main()
 {

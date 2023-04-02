@@ -77,6 +77,8 @@ void Axe::aConstMemberFunction() const { }
 
 #include "LeakedObjectDetector.h"
 #include "Wrappers.h"
+#include "Headset.h"
+#include "GeneratorChain.h"
 
 int main()
 {

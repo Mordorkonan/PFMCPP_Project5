@@ -17,8 +17,14 @@ Waveform::~Waveform()
 void Waveform::invertPhase(int phase)
 {
     int tempPhase = phase;
-    if (phase < 0) phase += 180;
-    else phase -= 180;
+    if (phase < 0)
+    {
+        phase += 180;        
+    }
+    else
+    {
+        phase -= 180;
+    }
     std::cout << "Phase inverted";
     std::cout << "Previous phase " << tempPhase << " has been inverted to " << phase << std::endl;
 }

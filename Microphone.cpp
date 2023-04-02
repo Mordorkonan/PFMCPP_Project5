@@ -30,7 +30,9 @@ bool Microphone::getState(const bool& toggleStateOnRequest)
         std::cout << "Mike's state has been changed on state request\n";        
     }
     else
+    {
         std::cout << "Mike's state stayed the same\n";  
+    }
     return currentState;
 }
 

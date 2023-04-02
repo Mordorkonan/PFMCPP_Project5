@@ -26,18 +26,17 @@ void GeneratorChain::fadeInFilterMix(FilterSection& filter)
     {
         float temp = filter.mix;
         filter.mix = 0.0f;
-        // for (int i = 0; i <= (int) (temp * 10); i++)
-        //     {
-        //         filter.mix += 0.1f;
-        //         std::cout << filter.mix << std::endl;
-        //     }
+
         for (float i = 0.0f; i <= temp + 0.1f; i += 0.1f)    // not really a common usage of an iterator but it works :)
         {
             filter.mix = i;
             std::cout << "Current filter mix amount: " << filter.mix << std::endl;            
         }
     }
-    else std::cout << "Error. Mix amount is 0.0f" << std::endl;
+    else
+    {
+        std::cout << "Error. Mix amount is 0.0f" << std::endl;
+    }
 }
 
 bool GeneratorChain::setFilterGainAndGetState()
